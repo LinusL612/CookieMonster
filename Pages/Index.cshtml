@@ -1,0 +1,97 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Webbshop";
+}
+
++
+@if (Model.WasReset)
+
+{
+    <div class="alert alert-info">Inställningarna har återställts</div>
+}
+
+@if (!Model.HasConsent)
+
+{
+    <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+        <span>Denna webbplats använder cookies</span>
+        <form method="post" class="d-flex gap-2">
+            <button type="submit" asp-page-handler="Accept" class="btn btn-success btn-sm">Acceptera</button>
+            <button type="submit" asp-page-handler="Deny" class="btn btn-outline-danger btn-sm">Neka</button>
+        </form>
+    </div>
+}
+
+else
+
+{
+    <form method="post" class="mb-3 d-flex gap-2 align-items-center">
+        <span>@Model.T("Valt språk", "Selected language"): <strong>@Model.Language</strong></span>
+        <button type="submit" asp-page-handler="SetLanguage" asp-route-lang="Svenska" class="btn btn-outline-primary btn-sm">Svenska</button>
+        <button type="submit" asp-page-handler="SetLanguage" asp-route-lang="English" class="btn btn-outline-primary btn-sm">English</button>
+    </form>
+}
+
+<h1>@Model.T("Välkommen till webbshoppen!", "Welcome to the webshop!")</h1>
+
+<div class="row my-4">
+    @foreach (var p in Model.Products)
+
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.ProductName(p)</h5>
+                    <p class="card-text">@Model.ProductDesc(p)</p>
+                    <p class="card-text fw-bold">@Model.Kr(p.Price)</p>
+                    <form method="post">
+                        <button type="submit" asp-page-handler="Add" asp-route-id="@p.ProductId" class="btn btn-primary">
+                            @Model.T("Lägg till", "Add to cart")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<h2>@Model.T("Varukorg", "Cart")</h2>
+
+@if (!Model.Cart.Items.Any())
+
+{
+    <p>@Model.T("Varukorgen är tom.", "The cart is empty.")</p>
+}
+
+else
+
+{
+    <ul class="list-group mb-3">
+        @foreach (var item in Model.Cart.Items)
+
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                    @Model.ProductName(item.Product) @Model.Kr(item.Product.Price)@Model.T("/st", "/each")
+                    &nbsp; @Model.T("Antal", "Qty"): @item.Quantity
+                    &nbsp; @Model.T("Pris", "Price"): @Model.Kr(item.TotalPrice)
+                </span>
+                <form method="post" class="d-flex gap-1">
+                    <button type="submit" asp-page-handler="Add" asp-route-id="@item.Product.ProductId" class="btn btn-outline-success btn-sm">+</button>
+                    <button type="submit" asp-page-handler="Decrease" asp-route-id="@item.Product.ProductId" class="btn btn-outline-danger btn-sm">−</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+
+<p>
+    <strong>@Model.T("Totalt antal artiklar", "Total items"): @Model.Cart.TotalItems</strong><br />
+    <strong>@Model.T("Totalsumma", "Total"): @Model.Kr(Model.Cart.TotalPrice)</strong>
+</p>
+
+<form method="post" class="d-flex gap-2">
+    <button type="submit" asp-page-handler="Clear" class="btn btn-warning">@Model.T("Töm varukorg", "Empty cart")</button>
+    <button type="submit" asp-page-handler="Reset" class="btn btn-outline-secondary">@Model.T("Återställ inställningar", "Reset settings")</button>
+</form>
